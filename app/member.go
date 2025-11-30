@@ -77,10 +77,37 @@ func RegisterNewMember() error {
 	return nil
 }
 
-func GetMemberDashboard(memberID uint) (map[string]interface{}, error) {
-	var result map[string]interface{}
-	err := DB.Raw("SELECT * FROM member_dashboard WHERE member_id = ?", memberID).Scan(&result).Error
-	return result, err
+// ViewDashboard displays a member's dashboard summary using the database view.
+// Demonstrates use of the member_dashboard view created in the database.
+func ViewDashboard() error {
+	fmt.Print("\nEnter Member ID: ")
+	var memberID uint
+	fmt.Scan(&memberID)
+
+	// Query the member_dashboard view
+	var result struct {
+		FirstName     string
+		LastName      string
+		TotalClasses  int64
+		TotalSessions int64
+		ActiveGoals   int64
+	}
+
+	err := DB.Raw(`
+		SELECT first_name, last_name, total_classes, total_sessions, active_goals 
+		FROM member_dashboard 
+		WHERE member_id = ?`, memberID).Scan(&result).Error
+
+	if err != nil {
+		return fmt.Errorf("member not found")
+	}
+
+	fmt.Printf("\n=== Dashboard for %s %s ===\n", result.FirstName, result.LastName)
+	fmt.Printf("Classes Enrolled: %d\n", result.TotalClasses)
+	fmt.Printf("Training Sessions: %d\n", result.TotalSessions)
+	fmt.Printf("Active Goals: %d\n", result.ActiveGoals)
+
+	return nil
 }
 
 // AddHealthMetric allows a member to log their health metrics (weight, height, heart rate, body fat %).

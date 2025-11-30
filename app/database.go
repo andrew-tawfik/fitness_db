@@ -116,3 +116,17 @@ func CreateTriggers() {
 		fmt.Println("Triggers created successfully")
 	}
 }
+
+// CreateIndexes creates custom database indexes for query optimization.
+func CreateIndexes() {
+	err := DB.Exec(`
+		create index if not exists idx_trainer_date 
+		on training_sessions(trainer_id, date);
+	`).Error
+
+	if err != nil {
+		log.Printf("Warning: Failed to create idx_trainer_date: %v", err)
+	} else {
+		fmt.Println("Indexes created successfully")
+	}
+}
