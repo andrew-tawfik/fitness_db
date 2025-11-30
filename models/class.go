@@ -11,5 +11,4 @@ type Class struct {
 	Capacity          int       `gorm:"not null;check:capacity > 0"`
 	CurrentEnrollment int       `gorm:"default:0;check:current_enrollment >= 0"`
 	RoomNumber        string    `gorm:"size:20"`
-	Cost              float64   `gorm:"type:decimal(10,2);not null"`
 }
