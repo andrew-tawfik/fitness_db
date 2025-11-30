@@ -2,11 +2,14 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fitness_db/models"
 	"fmt"
 	"os"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func RegisterNewMember() error {
@@ -80,7 +83,8 @@ func RegisterNewMember() error {
 // ViewDashboard displays a member's dashboard summary using the database view.
 // Demonstrates use of the member_dashboard view created in the database.
 func ViewDashboard() error {
-	fmt.Print("\nEnter Member ID: ")
+    
+    fmt.Print("\nEnter Member ID: ")
 	var memberID uint
 	fmt.Scan(&memberID)
 
@@ -113,7 +117,6 @@ func ViewDashboard() error {
 // AddHealthMetric allows a member to log their health metrics (weight, height, heart rate, body fat %).
 func AddHealthMetric() error {
 	var metric models.HealthMetric
-	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Println("\n=== Log Health Metrics ===")
 
@@ -124,7 +127,6 @@ func AddHealthMetric() error {
 	if err != nil {
 		return fmt.Errorf("invalid member ID")
 	}
-	reader.ReadString('\n') // Clear buffer
 
 	// Verify member exists
 	var member models.Member
@@ -184,7 +186,6 @@ func AddHealthMetric() error {
 
 // EnrollClass allows a member to register for a group fitness class.
 func EnrollClass() error {
-	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Println("\n=== Enroll in Group Class ===")
 
@@ -195,8 +196,6 @@ func EnrollClass() error {
 	if err != nil {
 		return fmt.Errorf("invalid member ID")
 	}
-	reader.ReadString('\n') // Clear buffer
-
 	// Verify member exists
 	var member models.Member
 	if err := DB.First(&member, memberID).Error; err != nil {
@@ -251,12 +250,22 @@ func EnrollClass() error {
 		return fmt.Errorf("class not found")
 	}
 
-	// Check if already enrolled
+	// Check if already enrolled - use errors.Is with gorm.ErrRecordNotFound
 	var existingEnrollment models.ClassEnrollment
-	if err := DB.Where("member_id = ? AND class_id = ?", memberID, classID).
-		First(&existingEnrollment).Error; err == nil {
+	err = DB.Where("member_id = ? AND class_id = ?", memberID, classID).
+		First(&existingEnrollment).Error
+
+	if err == nil {
+		// Record found - already enrolled
 		return fmt.Errorf("you are already enrolled in this class")
 	}
+
+	// Check if it's not a "record not found" error
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("failed to check enrollment status: %v", err)
+	}
+
+	// Record not found means not enrolled - proceed with enrollment
 
 	// Create enrollment (trigger will check capacity)
 	enrollment := models.ClassEnrollment{
@@ -290,7 +299,6 @@ func BookPersonalTraining() error {
 	if err != nil {
 		return fmt.Errorf("invalid member ID")
 	}
-	reader.ReadString('\n') // Clear buffer
 
 	// Verify member exists
 	var member models.Member
@@ -321,7 +329,6 @@ func BookPersonalTraining() error {
 	if err != nil {
 		return fmt.Errorf("invalid trainer ID")
 	}
-	reader.ReadString('\n') // Clear buffer
 
 	// Verify trainer exists
 	var trainer models.Trainer

@@ -46,7 +46,6 @@ func CreateClass() error {
 	if err != nil {
 		return fmt.Errorf("invalid trainer ID")
 	}
-	reader.ReadString('\n') // Clear buffer
 
 	// Validate trainer exists if provided
 	var trainerPtr *uint
@@ -79,7 +78,6 @@ func CreateClass() error {
 	if err != nil || duration <= 0 || duration > 300 {
 		return fmt.Errorf("invalid duration (must be between 1-300 minutes)")
 	}
-	reader.ReadString('\n') // Clear buffer
 
 	// Get capacity
 	fmt.Print("Enter class capacity: ")
@@ -88,7 +86,6 @@ func CreateClass() error {
 	if err != nil || capacity <= 0 || capacity > 100 {
 		return fmt.Errorf("invalid capacity (must be between 1-100)")
 	}
-	reader.ReadString('\n') // Clear buffer
 
 	// Get room number
 	fmt.Print("Enter room number: ")
@@ -170,7 +167,6 @@ func UpdateClass() error {
 	if err != nil {
 		return fmt.Errorf("invalid class ID")
 	}
-	reader.ReadString('\n') // Clear buffer
 
 	// Fetch the class
 	var class models.Class
@@ -200,7 +196,6 @@ func UpdateClass() error {
 	if err != nil {
 		return fmt.Errorf("invalid choice")
 	}
-	reader.ReadString('\n') // Clear buffer
 
 	switch choice {
 	case 1: // Change schedule time

@@ -94,7 +94,7 @@ func MemberLookup() error {
 			Order("recorded_date DESC").
 			First(&metric).Error
 		if err == nil {
-			fmt.Printf("  Last Metric: %.1f lbs, %d bpm\n", metric.Weight, metric.HeartRate)
+			fmt.Printf("  Last Metric: %.1f lbs, %.1f BFP\n", metric.Weight, metric.BodyFatPct)
 		} else {
 			fmt.Printf("  Last Metric: None recorded\n")
 		}
