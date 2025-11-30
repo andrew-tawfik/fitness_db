@@ -60,43 +60,66 @@ func ViewTrainerSchedule() error {
 func MemberLookup() error {
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Print("\nEnter member name to search: ")
+	fmt.Print("\nEnter your Trainer ID: ")
+	var trainerID uint
+	fmt.Scanln(&trainerID)
+
+	// Verify trainer exists
+	var trainer models.Trainer
+	if err := DB.First(&trainer, trainerID).Error; err != nil {
+		return fmt.Errorf("trainer not found")
+	}
+
+	fmt.Print("Enter member name to search (from your clients): ")
 	name, _ := reader.ReadString('\n')
 	name = strings.TrimSpace(name)
 
-	// Case-insensitive search
+	// Get only members this trainer has sessions with
 	var members []models.Member
 	searchTerm := "%" + strings.ToLower(name) + "%"
-	DB.Where("LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ?", searchTerm, searchTerm).
-		Find(&members)
+	
+	err := DB.Table("members m").
+		Select("DISTINCT m.*").
+		Joins("JOIN training_sessions ts ON m.member_id = ts.member_id").
+		Where("ts.trainer_id = ?", trainerID).
+		Where("LOWER(m.first_name) LIKE ? OR LOWER(m.last_name) LIKE ?", searchTerm, searchTerm).
+		Find(&members).Error
 
-	if len(members) == 0 {
-		return fmt.Errorf("no members found")
+	if err != nil || len(members) == 0 {
+		return fmt.Errorf("no clients found matching '%s'", name)
 	}
 
-	fmt.Printf("\nFound %d member(s):\n", len(members))
+	fmt.Printf("\nFound %d client(s):\n", len(members))
 
 	for _, m := range members {
 		fmt.Printf("\n%s %s (ID: %d)\n", m.FirstName, m.LastName, m.MemberID)
 
-		// Get current active goal
+		// Show goal
 		var goal models.FitnessGoal
 		err := DB.Where("member_id = ? AND status = 'active'", m.MemberID).First(&goal).Error
 		if err == nil {
-			fmt.Printf("  Goal: %s - Target: %.1f lbs\n", goal.GoalType, goal.TargetWeight)
+			fmt.Printf("  Goal: %s - Target: %.1f lbs by %s\n", 
+				goal.GoalType, goal.TargetWeight, goal.TargetDate.Format("Jan 02"))
 		} else {
-			fmt.Printf("  Goal: None\n")
+			fmt.Printf("  Goal: None set\n")
 		}
 
-		// Get latest metric
-		var metric models.HealthMetric
-		err = DB.Where("member_id = ?", m.MemberID).
+		// Show metric history (last 3 entries)
+		var metrics []models.HealthMetric
+		DB.Where("member_id = ?", m.MemberID).
 			Order("recorded_date DESC").
-			First(&metric).Error
-		if err == nil {
-			fmt.Printf("  Last Metric: %.1f lbs, %.1f BFP\n", metric.Weight, metric.BodyFatPct)
+			Limit(3).
+			Find(&metrics)
+
+		if len(metrics) > 0 {
+			fmt.Printf("  Recent Metrics:\n")
+			for _, mt := range metrics {
+				fmt.Printf("    %s: %.1f lbs, %d bpm, %.1f%% BF\n",
+					mt.RecordedDate.Format("Jan 02"),
+					mt.Weight, mt.HeartRate, mt.BodyFatPct)
+			}
 		} else {
-			fmt.Printf("  Last Metric: None recorded\n")
+			fmt.Printf("  Metrics: None recorded\n")
 		}
 	}
 

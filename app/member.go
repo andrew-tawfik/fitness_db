@@ -83,33 +83,89 @@ func RegisterNewMember() error {
 // ViewDashboard displays a member's dashboard summary using the database view.
 // Demonstrates use of the member_dashboard view created in the database.
 func ViewDashboard() error {
-    
-    fmt.Print("\nEnter Member ID: ")
+	fmt.Print("\nEnter Member ID: ")
 	var memberID uint
-	fmt.Scan(&memberID)
+	fmt.Scanln(&memberID)
 
-	// Query the member_dashboard view
+	// Get member info
+	var member models.Member
+	if err := DB.First(&member, memberID).Error; err != nil {
+		return fmt.Errorf("member not found")
+	}
+
+	fmt.Printf("\n=== Dashboard for %s %s ===\n", member.FirstName, member.LastName)
+
+	// Get stats from view
 	var result struct {
-		FirstName     string
-		LastName      string
 		TotalClasses  int64
 		TotalSessions int64
 		ActiveGoals   int64
 	}
+	DB.Raw(`SELECT total_classes, total_sessions, active_goals 
+		FROM member_dashboard WHERE member_id = ?`, memberID).Scan(&result)
 
-	err := DB.Raw(`
-		SELECT first_name, last_name, total_classes, total_sessions, active_goals 
-		FROM member_dashboard 
-		WHERE member_id = ?`, memberID).Scan(&result).Error
-
-	if err != nil {
-		return fmt.Errorf("member not found")
-	}
-
-	fmt.Printf("\n=== Dashboard for %s %s ===\n", result.FirstName, result.LastName)
 	fmt.Printf("Classes Enrolled: %d\n", result.TotalClasses)
 	fmt.Printf("Training Sessions: %d\n", result.TotalSessions)
 	fmt.Printf("Active Goals: %d\n", result.ActiveGoals)
+
+	// Show active goal with progress
+	var goal models.FitnessGoal
+	err := DB.Where("member_id = ? AND status = 'active'", memberID).First(&goal).Error
+	if err == nil {
+		fmt.Printf("\nCurrent Goal: %s\n", goal.GoalType)
+		fmt.Printf("   Target: %.1f lbs by %s\n", goal.TargetWeight, goal.TargetDate.Format("Jan 02, 2006"))
+
+		// Get latest weight
+		var latestMetric models.HealthMetric
+		err := DB.Where("member_id = ?", memberID).
+			Order("recorded_date DESC").
+			First(&latestMetric).Error
+
+		if err == nil {
+			// Calculate progress
+			if goal.GoalType == "Weight Loss" {
+				// Get starting weight (first metric)
+				var firstMetric models.HealthMetric
+				DB.Where("member_id = ?", memberID).
+					Order("recorded_date ASC").
+					First(&firstMetric)
+
+				startWeight := firstMetric.Weight
+				currentWeight := latestMetric.Weight
+				targetWeight := goal.TargetWeight
+
+				weightLost := startWeight - currentWeight
+				totalNeeded := startWeight - targetWeight
+				progress := (weightLost / totalNeeded) * 100
+
+				if progress < 0 {
+					progress = 0
+				}
+				if progress > 100 {
+					progress = 100
+				}
+
+				fmt.Printf("   Progress: %.1f%% complete\n", progress)
+				fmt.Printf("   Current: %.1f lbs (%.1f lbs to go)\n",
+					currentWeight, currentWeight-targetWeight)
+			}
+		}
+	}
+
+	// Show recent metrics
+	var metrics []models.HealthMetric
+	DB.Where("member_id = ?", memberID).
+		Order("recorded_date DESC").
+		Limit(3).
+		Find(&metrics)
+
+	if len(metrics) > 0 {
+		fmt.Printf("\nRecent Health Metrics:\n")
+		for _, m := range metrics {
+			fmt.Printf("   %s: %.1f lbs, %d bpm\n",
+				m.RecordedDate.Format("Jan 02"), m.Weight, m.HeartRate)
+		}
+	}
 
 	return nil
 }

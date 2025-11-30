@@ -95,14 +95,6 @@ func CreateClass() error {
 		return fmt.Errorf("room number cannot be empty")
 	}
 
-	// Get cost
-	fmt.Print("Enter class cost ($): ")
-	var cost float64
-	_, err = fmt.Scan(&cost)
-	if err != nil || cost < 0 {
-		return fmt.Errorf("invalid cost")
-	}
-
 	// Create the class
 	class := models.Class{
 		ClassName:         className,
@@ -118,7 +110,7 @@ func CreateClass() error {
 		return fmt.Errorf("failed to create class: %v", err)
 	}
 
-	fmt.Printf("\n✓ Class created successfully! Class ID: %d\n", class.ClassID)
+	fmt.Printf("\nClass created successfully! Class ID: %d\n", class.ClassID)
 	fmt.Printf("  Name: %s\n", class.ClassName)
 	fmt.Printf("  Schedule: %s\n", scheduleTime.Format("Mon Jan 02, 2006 at 3:04 PM"))
 	fmt.Printf("  Duration: %d minutes\n", duration)
@@ -186,8 +178,7 @@ func UpdateClass() error {
 	fmt.Println("2. Change trainer")
 	fmt.Println("3. Change capacity")
 	fmt.Println("4. Change room number")
-	fmt.Println("5. Change cost")
-	fmt.Println("6. Cancel class (delete)")
+	fmt.Println("5. Cancel class (delete)")
 	fmt.Println("7. Back to menu")
 	fmt.Print("\nEnter choice: ")
 
@@ -213,7 +204,7 @@ func UpdateClass() error {
 		if err := DB.Model(&class).Update("schedule_time", newTime).Error; err != nil {
 			return fmt.Errorf("failed to update schedule: %v", err)
 		}
-		fmt.Printf("\n✓ Schedule updated to %s\n", newTime.Format("Mon Jan 02, 2006 at 3:04 PM"))
+		fmt.Printf("\nSchedule updated to %s\n", newTime.Format("Mon Jan 02, 2006 at 3:04 PM"))
 
 	case 2: // Change trainer
 		fmt.Println("\nAvailable Trainers:")
@@ -239,7 +230,7 @@ func UpdateClass() error {
 		if err := DB.Model(&class).Update("trainer_id", trainerPtr).Error; err != nil {
 			return fmt.Errorf("failed to update trainer: %v", err)
 		}
-		fmt.Println("\n✓ Trainer updated successfully")
+		fmt.Println("\nTrainer updated successfully")
 
 	case 3: // Change capacity
 		fmt.Printf("Current enrollment: %d\n", class.CurrentEnrollment)
@@ -257,7 +248,7 @@ func UpdateClass() error {
 		if err := DB.Model(&class).Update("capacity", newCapacity).Error; err != nil {
 			return fmt.Errorf("failed to update capacity: %v", err)
 		}
-		fmt.Printf("\n✓ Capacity updated to %d\n", newCapacity)
+		fmt.Printf("\nCapacity updated to %d\n", newCapacity)
 
 	case 4: // Change room number
 		fmt.Print("Enter new room number: ")
@@ -270,22 +261,10 @@ func UpdateClass() error {
 		if err := DB.Model(&class).Update("room_number", newRoom).Error; err != nil {
 			return fmt.Errorf("failed to update room: %v", err)
 		}
-		fmt.Printf("\n✓ Room updated to %s\n", newRoom)
+		fmt.Printf("\nRoom updated to %s\n", newRoom)
 
-	case 5: // Change cost
-		fmt.Print("Enter new cost ($): ")
-		var newCost float64
-		fmt.Scan(&newCost)
-		if newCost < 0 {
-			return fmt.Errorf("cost cannot be negative")
-		}
 
-		if err := DB.Model(&class).Update("cost", newCost).Error; err != nil {
-			return fmt.Errorf("failed to update cost: %v", err)
-		}
-		fmt.Printf("\n✓ Cost updated to $%.2f\n", newCost)
-
-	case 6: // Cancel/Delete class
+	case 5: // Cancel/Delete class
 		if class.CurrentEnrollment > 0 {
 			fmt.Printf("\nWARNING: This class has %d enrolled members.\n", class.CurrentEnrollment)
 			fmt.Print("Are you sure you want to cancel? (yes/no): ")
@@ -300,7 +279,7 @@ func UpdateClass() error {
 		if err := DB.Delete(&class).Error; err != nil {
 			return fmt.Errorf("failed to cancel class: %v", err)
 		}
-		fmt.Println("\n✓ Class cancelled and removed from system")
+		fmt.Println("\nClass cancelled and removed from system")
 
 	case 7:
 		return nil
