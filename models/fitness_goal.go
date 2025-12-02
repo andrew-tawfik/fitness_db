@@ -7,6 +7,6 @@ type FitnessGoal struct {
 	GoalID       uint    `gorm:"primaryKey"` // Part of composite PK
 	GoalType     string  `gorm:"size:50"`
 	TargetWeight float64 `gorm:"type:decimal(5,2)"`
-	TargetDate   time.Time
+	TargetDate   time.Time `gorm:"type:date"` 
 	Status       string `gorm:"size:20;default:'active'"`
 }

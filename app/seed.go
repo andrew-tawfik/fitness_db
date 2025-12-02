@@ -17,19 +17,19 @@ func SeedDatabase() {
 	fmt.Println("Seeding database with realistic test data...")
 	members := []models.Member{
 		{FirstName: "John", LastName: "Doe", Email: "john@example.com",
-			DateOfBirth: time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC),
+			DateOfBirth: time.Date(1990, 1, 1, 0, 0, 0, 0, time.Local),
 			Gender:      "Male", Phone: "613-555-0001"},
 		{FirstName: "Jane", LastName: "Smith", Email: "jane@example.com",
-			DateOfBirth: time.Date(1992, 5, 15, 0, 0, 0, 0, time.UTC),
+			DateOfBirth: time.Date(1992, 5, 15, 0, 0, 0, 0, time.Local),
 			Gender:      "Female", Phone: "613-555-0002"},
 		{FirstName: "Bob", LastName: "Wilson", Email: "bob@example.com",
-			DateOfBirth: time.Date(1988, 8, 20, 0, 0, 0, 0, time.UTC),
+			DateOfBirth: time.Date(1988, 8, 20, 0, 0, 0, 0, time.Local),
 			Gender:      "Male", Phone: "613-555-0003"},
 		{FirstName: "Alice", LastName: "Brown", Email: "alice@example.com",
-			DateOfBirth: time.Date(1995, 3, 10, 0, 0, 0, 0, time.UTC),
+			DateOfBirth: time.Date(1995, 3, 10, 0, 0, 0, 0, time.Local),
 			Gender:      "Female", Phone: "613-555-0004"},
 		{FirstName: "Charlie", LastName: "Davis", Email: "charlie@example.com",
-			DateOfBirth: time.Date(1985, 12, 5, 0, 0, 0, 0, time.UTC),
+			DateOfBirth: time.Date(1985, 12, 5, 0, 0, 0, 0, time.Local),
 			Gender:      "Male", Phone: "613-555-0005"},
 	}
 	DB.Create(&members)

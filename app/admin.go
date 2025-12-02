@@ -1,4 +1,3 @@
-// In admin.go
 package main
 
 import (
@@ -65,6 +64,15 @@ func CreateClass() error {
 	if err != nil {
 		return fmt.Errorf("invalid date/time format, use YYYY-MM-DD HH:MM")
 	}
+
+	scheduleTime = time.Date(
+		scheduleTime.Year(),
+		scheduleTime.Month(),
+		scheduleTime.Day(),
+		scheduleTime.Hour(),
+		scheduleTime.Minute(),
+		0, 0,
+		time.Local)
 
 	// Check if time is in the future
 	if scheduleTime.Before(time.Now()) {
@@ -197,6 +205,16 @@ func UpdateClass() error {
 		if err != nil {
 			return fmt.Errorf("invalid date/time format")
 		}
+
+		newTime = time.Date(
+			newTime.Year(),
+			newTime.Month(),
+			newTime.Day(),
+			newTime.Hour(),
+			newTime.Minute(),
+			0, 0,
+			time.Local)
+
 		if newTime.Before(time.Now()) {
 			return fmt.Errorf("cannot schedule classes in the past")
 		}
@@ -262,7 +280,6 @@ func UpdateClass() error {
 			return fmt.Errorf("failed to update room: %v", err)
 		}
 		fmt.Printf("\nRoom updated to %s\n", newRoom)
-
 
 	case 5: // Cancel/Delete class
 		if class.CurrentEnrollment > 0 {

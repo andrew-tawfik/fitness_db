@@ -76,7 +76,7 @@ func RegisterNewMember() error {
 		return fmt.Errorf("failed to register member: %v", err)
 	}
 
-	fmt.Printf("\n✓ Member registered successfully! Member ID: %d\n", member.MemberID)
+	fmt.Printf("\n Member registered successfully! Member ID: %d\n", member.MemberID)
 	return nil
 }
 
@@ -236,7 +236,7 @@ func AddHealthMetric() error {
 		return fmt.Errorf("failed to log health metric: %v", err)
 	}
 
-	fmt.Printf("\n✓ Health metrics logged successfully! (Metric ID: %d)\n", metric.MetricID)
+	fmt.Printf("\nHealth metrics logged successfully! (Metric ID: %d)\n", metric.MetricID)
 	return nil
 }
 
@@ -338,7 +338,7 @@ func EnrollClass() error {
 		return fmt.Errorf("failed to enroll in class: %v", err)
 	}
 
-	fmt.Printf("\n✓ Successfully enrolled in %s!\n", selectedClass.ClassName)
+	fmt.Printf("\nSuccessfully enrolled in %s!\n", selectedClass.ClassName)
 	return nil
 }
 
@@ -415,9 +415,9 @@ func BookPersonalTraining() error {
 		return fmt.Errorf("invalid time format, use HH:MM")
 	}
 
-	// Combine date and time
+	// Combine date and time using Local timezone
 	startTime := time.Date(sessionDate.Year(), sessionDate.Month(), sessionDate.Day(),
-		startTimeParsed.Hour(), startTimeParsed.Minute(), 0, 0, sessionDate.Location())
+		startTimeParsed.Hour(), startTimeParsed.Minute(), 0, 0, time.Local) // CHANGED: use time.Local
 
 	// Get duration
 	fmt.Print("Enter duration (minutes): ")
@@ -467,7 +467,7 @@ func BookPersonalTraining() error {
 		return fmt.Errorf("failed to book training session: %v", err)
 	}
 
-	fmt.Printf("\n✓ Training session booked successfully!\n")
+	fmt.Printf("\nTraining session booked successfully!\n")
 	fmt.Printf("  Trainer: %s %s\n", trainer.FirstName, trainer.LastName)
 	fmt.Printf("  Date: %s\n", sessionDate.Format("Mon Jan 02, 2006"))
 	fmt.Printf("  Time: %s - %s\n", startTime.Format("3:04 PM"), endTime.Format("3:04 PM"))

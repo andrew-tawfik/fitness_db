@@ -33,7 +33,7 @@ func ViewTrainerSchedule() error {
 	fmt.Printf("\nPersonal Training Sessions: %d\n", len(sessions))
 	for _, s := range sessions {
 		fmt.Printf("  - %s at %s (Status: %s)\n",
-			s.Date.Format("Jan 02"),
+			s.StartTime.Format("Jan 02"),
 			s.StartTime.Format("3:04 PM"),
 			s.Status)
 	}
