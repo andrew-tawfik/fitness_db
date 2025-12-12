@@ -2,8 +2,8 @@
 
 **Course:** COMP 3005 - Database Management Systems  
 **Term:** Fall 2025  
-**Student:** [Your Name]  
-**Student ID:** [Your ID]  
+**Student:** Andrew Tawfik
+**Student ID:** 101266093
 **Group Size:** Solo Project
 
 ## Demo Video
